@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makkah Projects — Project Controls Dashboard · Oct 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{
+  --bg:#0f172a; --s900:#0f172a; --s800:#1e293b; --s700:#334155; --s600:#475569; --s500:#64748b; --s400:#94a3b8; --s300:#cbd5e1; --s200:#e2e8f0; --s100:#f1f5f9;
+  --navy:#1e40af; --cobalt:#3b82f6; --amber:#f59e0b; --emerald:#10b981; --crimson:#ef4444; --violet:#8b5cf6;
+  --chart-plan:#3b82f6; --chart-act:#d97706; --chart-em:#059669; --chart-red:#ef4444; --chart-vi:#8b5cf6;
+  --border:rgba(148,163,184,.18); --text:#f8fafc; --muted:#94a3b8; --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1560px;margin:0 auto;padding:0 20px 60px}
+/* Header */
+header{position:sticky;top:0;z-index:40;background:rgba(15,23,42,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.hd{max-width:1560px;margin:0 auto;padding:14px 20px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--cobalt));display:grid;place-items:center;box-shadow:0 0 0 1px rgba(255,255,255,.08) inset}
+.brand h1{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.brand p{font-size:12px;color:var(--muted)}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
+.chip{display:flex;flex-direction:column;gap:2px;padding:7px 12px;border:1px solid var(--border);border-radius:10px;background:var(--s800);min-width:120px}
+.chip .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.chip .v{font-size:13px;font-weight:600;white-space:nowrap}
+.sync{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);color:#6ee7b7;font-size:12px;font-weight:600;align-self:center}
+.sync .dot{width:8px;height:8px;border-radius:50%;background:var(--emerald);box-shadow:0 0 0 0 rgba(16,185,129,.7);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+/* Filter strip */
+.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;padding:16px;margin:18px 0;background:var(--s800);border:1px solid var(--border);border-radius:var(--radius)}
+.f{display:flex;flex-direction:column;gap:6px;min-width:160px;flex:1}
+.f label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+select,input[type=search]{width:100%;background:var(--s900);color:var(--text);border:1px solid var(--s600);border-radius:9px;padding:9px 12px;font:inherit;font-size:13px;outline:none;transition:border .15s}
+select:focus,input:focus{border-color:var(--cobalt);box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:9px;border:1px solid var(--s600);background:var(--s700);color:var(--text);font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{background:var(--s600)}
+.btn.primary{background:var(--navy);border-color:var(--cobalt)}
+.btn.primary:hover{background:#1d4ed8}
+.fcount{font-size:12px;color:var(--muted);align-self:center;white-space:nowrap}
+/* Sections */
+section{margin-top:26px}
+.sh{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.sh h2{font-size:15px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--s200)}
+.sh .sub{font-size:12px;color:var(--muted)}
+.sh .src{margin-left:auto;font-size:11px;color:var(--s500)}
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.kpi{background:var(--s800);border:1px solid var(--border);border-radius:var(--radius);padding:16px 16px 14px;position:relative;overflow:hidden;transition:transform .15s,border-color .15s}
+.kpi:hover{border-color:rgba(148,163,184,.35);transform:translateY(-1px)}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--acc,var(--cobalt))}
+.kpi .t{display:flex;align-items:center;gap:8px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.kpi .t svg{width:15px;height:15px;color:var(--acc,var(--cobalt))}
+.kpi .val{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:8px 0 6px;font-variant-numeric:tabular-nums}
+.kpi .val small{font-size:14px;font-weight:600;color:var(--muted);margin-left:4px}
+.kpi .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.badge.good{background:rgba(16,185,129,.15);color:#6ee7b7}
+.badge.warn{background:rgba(245,158,11,.15);color:#fcd34d}
+.badge.bad{background:rgba(239,68,68,.15);color:#fca5a5}
+.badge.neu{background:rgba(148,163,184,.15);color:var(--s300)}
+.badge.info{background:rgba(59,130,246,.15);color:#93c5fd}
+.kpi .hint{font-size:11px;color:var(--s500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:6px;background:var(--s700);border-radius:999px;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;border-radius:999px;background:var(--acc,var(--cobalt));transition:width .5s cubic-bezier(.4,0,.2,1)}
+.bar.split{position:relative}
+.bar.split i{position:absolute;left:0;top:0}
+.bar.split i.p{background:rgba(59,130,246,.35)}
+.spark{height:28px;margin-top:8px}
+/* Charts */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.card{background:var(--s800);border:1px solid var(--border);border-radius:var(--radius);padding:16px;min-width:0}
+.card h3{font-size:13px;font-weight:700;color:var(--s200);display:flex;align-items:center;gap:8px}
+.card h3 svg{width:15px;height:15px;color:var(--cobalt)}
+.card .d{font-size:11px;color:var(--muted);margin:3px 0 10px}
+.ch{position:relative;height:300px}
+.ch.tall{height:360px}
+.ch.short{height:220px}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c7{grid-column:span 7}.c6{grid-column:span 6}.c5{grid-column:span 5}.c4{grid-column:span 4}
+@media(max-width:1100px){.c8,.c7,.c6,.c5,.c4{grid-column:span 12}}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--s300);margin-bottom:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--s500);font-size:13px;background:var(--s800)}
+/* Table */
+.tbl-wrap{background:var(--s800);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.tbl-top{display:flex;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.search{position:relative;flex:1;min-width:240px;max-width:420px}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--s500)}
+.search input{padding-left:34px}
+.tabs{display:flex;gap:4px;background:var(--s900);padding:4px;border-radius:10px;border:1px solid var(--border)}
+.tab{padding:7px 12px;border-radius:7px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border:0;background:transparent;font-family:inherit}
+.tab.on{background:var(--s700);color:var(--text)}
+.scroll{max-height:560px;overflow:auto}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+thead th{position:sticky;top:0;z-index:2;background:#162033;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;text-align:left;padding:11px 12px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+thead th:hover{color:var(--text)}
+thead th .si{display:inline-block;width:12px;opacity:.5;margin-left:4px}
+thead th.sorted{color:var(--cobalt)}
+thead th.sorted .si{opacity:1}
+tbody td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap;font-variant-numeric:tabular-nums}
+tbody tr{cursor:pointer;transition:background .12s}
+tbody tr:hover{background:rgba(59,130,246,.07)}
+tbody tr.total td{background:#162033;font-weight:700;cursor:default}
+td.r,th.r{text-align:right}
+.pname{font-weight:600}
+.pid{font-size:11px;color:var(--s500);font-weight:500}
+.pg{display:flex;align-items:center;gap:8px;min-width:150px}
+.pg .bar{flex:1;margin:0}
+.pg b{font-size:12px;width:48px;text-align:right}
+.pos{color:#6ee7b7}.neg{color:#fca5a5}.zero{color:var(--s400)}
+.st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;border:1px solid transparent}
+.st svg{width:12px;height:12px}
+.st.COMPLETED{background:rgba(16,185,129,.14);color:#6ee7b7;border-color:rgba(16,185,129,.3)}
+.st.ONTRACK{background:rgba(16,185,129,.14);color:#6ee7b7;border-color:rgba(16,185,129,.3)}
+.st.BEHIND{background:rgba(245,158,11,.14);color:#fcd34d;border-color:rgba(245,158,11,.3)}
+.st.CRITICAL{background:rgba(239,68,68,.14);color:#fca5a5;border-color:rgba(239,68,68,.3)}
+.st.REVIEW{background:rgba(59,130,246,.14);color:#93c5fd;border-color:rgba(59,130,246,.3)}
+.tfoot{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+/* Modal */
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:stretch;justify-content:flex-end;background:rgba(2,6,23,.6);backdrop-filter:blur(3px)}
+.modal.open{display:flex}
+.drawer{width:min(760px,100%);background:var(--s900);border-left:1px solid var(--border);height:100%;overflow:auto;padding:24px;animation:slide .25s ease}
+@keyframes slide{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
+.drawer .top{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px}
+.drawer h2{font-size:20px;font-weight:800;letter-spacing:-.01em}
+.drawer .close{margin-left:auto}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.dcell{background:var(--s800);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.dcell .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.dcell .v{font-size:15px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+.drawer h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:18px 0 8px;font-weight:700}
+.notes{background:var(--s800);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.notes li{margin:4px 0 4px 16px;color:var(--s200);font-size:13px}
+.qs{width:100%;font-size:13px}
+.qs td{padding:7px 0;border-bottom:1px solid var(--border)}
+.qs td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.qs td:first-child{color:var(--muted)}
+.foot{margin-top:30px;font-size:11px;color:var(--s500);line-height:1.6;border-top:1px solid var(--border);padding-top:14px}
+.chartjs-tooltip{pointer-events:none}
+@media(max-width:700px){.hd{padding:12px 16px}.meta{margin-left:0}.kpi .val{font-size:24px}.ch{height:260px}.wrap{padding:0 16px 40px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd">
+    <div class="brand">
+      <div class="logo"><i data-lucide="hard-hat" style="width:22px;height:22px;color:#fff"></i></div>
+      <div>
+        <h1 id="hTitle">Makkah Projects — Project Controls Dashboard</h1>
+        <p id="hSub">Monthly Progress &amp; Certified IPC Report · Schedule, Physical Progress &amp; Certified IPC</p>
+      </div>
+    </div>
+    <div class="meta">
+      <div class="chip"><span class="k">Programmes / Client Portfolios</span><span class="v" id="hClient">—</span></div>
+      <div class="chip"><span class="k">Data Date (Cut-off)</span><span class="v" id="hDate">—</span></div>
+      <div class="chip"><span class="k">Baseline Reference</span><span class="v" id="hBase">—</span></div>
+      <div class="chip"><span class="k">Source Workbook</span><span class="v" id="hSrc">—</span></div>
+      <div class="sync"><span class="dot"></span>Last synced <span id="hSync">—</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- FILTER STRIP -->
+  <div class="filters" id="filters">
+    <div class="f"><label>Programme / WBS Zone</label><select id="fProg"><option value="">All programmes</option></select></div>
+    <div class="f"><label>Project / Package</label><select id="fProj"><option value="">All projects</option></select></div>
+    <div class="f"><label>Schedule Status</label><select id="fStatus"><option value="">All statuses</option></select></div>
+    <div class="f"><label>Forecast Finish — From</label><select id="fFrom"><option value="">Earliest</option></select></div>
+    <div class="f"><label>Forecast Finish — To</label><select id="fTo"><option value="">Latest</option></select></div>
+    <button class="btn" id="btnReset"><i data-lucide="rotate-ccw" style="width:14px;height:14px"></i>Reset Filters</button>
+    <span class="fcount" id="fCount"></span>
+  </div>
+
+  <!-- KPI RIBBON -->
+  <section>
+    <div class="sh"><h2>Executive KPI Ribbon</h2><span class="sub">Schedule &amp; physical progress · averages weighted equally across projects (as per workbook)</span><span class="src">Source: Progress Dashboard · Executive Dashboard</span></div>
+    <div class="kpis" id="kpis"></div>
+  </section>
+
+  <!-- CHART GRID — SCHEDULE -->
+  <section>
+    <div class="sh"><h2>Schedule &amp; Physical Progress Analytics</h2><span class="sub">Variance = Actual % − Planned % · Delay = Forecast/Actual Finish − Plan/Revised Finish</span><span class="src">Source: Projects Status -Progress</span></div>
+    <div class="grid">
+      <div class="card c7">
+        <h3><i data-lucide="bar-chart-3"></i>Planned % vs Actual % — by Project</h3>
+        <div class="d">Physical progress at data date. Hover a bar for exact values, variance and delay.</div>
+        <div class="legend"><span><i style="background:var(--chart-plan)"></i>Planned %</span><span><i style="background:var(--chart-act)"></i>Actual %</span></div>
+        <div class="ch"><canvas id="cPlanAct"></canvas></div>
+      </div>
+      <div class="card c5">
+        <h3><i data-lucide="pie-chart"></i>Portfolio Completion Status</h3>
+        <div class="d">Number of projects per physical-progress band (workbook banding).</div>
+        <div class="ch"><canvas id="cStatus"></canvas></div>
+      </div>
+      <div class="card c7">
+        <h3><i data-lucide="diff"></i>Schedule Variance (Actual − Planned)</h3>
+        <div class="d">Sorted best → worst. Positive = ahead of plan, negative = behind plan.</div>
+        <div class="ch"><canvas id="cVar"></canvas></div>
+      </div>
+      <div class="card c5">
+        <h3><i data-lucide="gantt-chart"></i>Schedule Timeline — Start to Forecast Finish</h3>
+        <div class="d">Bar = Start → Forecast/Actual Finish. Marker = Plan/Revised finish. Red tint = forecast later than plan.</div>
+        <div class="ch"><canvas id="cGantt"></canvas></div>
+      </div>
+      <div class="card c12">
+        <h3><i data-lucide="trending-up"></i>S-Curve — Cumulative Concrete Placement · Jabal Omar Hotel (AIMS)</h3>
+        <div class="d">The only time-phased series in the workbook (JOH -Concrete by Month). Cumulative m³ placed (line) with monthly volume (bars, lower panel). Peak month highlighted.</div>
+        <div class="legend"><span><i style="background:var(--chart-plan)"></i>Cumulative poured (m³)</span><span><i style="background:var(--chart-act)"></i>Monthly volume (m³)</span><span><i style="background:var(--chart-red)"></i>Peak month</span></div>
+        <div class="ch short"><canvas id="cSCurve"></canvas></div>
+        <div class="ch short" style="margin-top:6px"><canvas id="cConcrete"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHART GRID — IPC -->
+  <section>
+    <div class="sh"><h2>Certified IPC Analytics</h2><span class="sub">All values in SAR, without VAT · This Month = Current − Previous</span><span class="src">Source: Projects Status- QS · IPC Dashboard</span></div>
+    <div class="kpis" id="kpisIpc" style="margin-bottom:12px"></div>
+    <div class="grid">
+      <div class="card c7">
+        <h3><i data-lucide="coins"></i>Certified IPC — Previous vs This Month vs Current</h3>
+        <div class="d">Per project. Current certified IPC = Previous + This Month.</div>
+        <div class="legend"><span><i style="background:var(--chart-plan)"></i>Previous</span><span><i style="background:var(--chart-act)"></i>This month</span><span><i style="background:var(--chart-em)"></i>Current</span></div>
+        <div class="ch"><canvas id="cIpc"></canvas></div>
+      </div>
+      <div class="card c5">
+        <h3><i data-lucide="pie-chart"></i>Contribution to Total Current IPC</h3>
+        <div class="d">Share of cumulative certified value, highest → lowest.</div>
+        <div class="ch"><canvas id="cIpcShare"></canvas></div>
+      </div>
+      <div class="card c12">
+        <h3><i data-lucide="git-commit-horizontal"></i>Movement: Previous → Current Certified IPC</h3>
+        <div class="d">Waterfall bridge of this month's certifications by project.</div>
+        <div class="ch short"><canvas id="cBridge"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLE -->
+  <section>
+    <div class="sh"><h2>Detailed Project &amp; Milestone Tracker</h2><span class="sub">Click a column to sort · click a row for the drill-down drawer</span><span class="src">Source: Projects Status -Progress · Projects Status- QS</span></div>
+    <div class="tbl-wrap">
+      <div class="tbl-top">
+        <div class="search"><i data-lucide="search"></i><input type="search" id="q" placeholder="Search ID, project, programme, status, narrative…"></div>
+        <div class="tabs">
+          <button class="tab on" data-view="schedule">Schedule &amp; Progress</button>
+          <button class="tab" data-view="ipc">Certified IPC &amp; Cash</button>
+        </div>
+      </div>
+      <div class="scroll"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+      <div class="tfoot"><span id="tInfo"></span><span>Totals/averages recomputed on the filtered set</span></div>
+    </div>
+  </section>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<!-- DRAWER -->
+<div class="modal" id="modal"><div class="drawer" id="drawer"></div></div>
+
+<!-- ============================================================
+     DATA MODEL + CALCULATION ENGINE (pure, DOM-free; mirrors workbook formulas)
+     ============================================================ -->
+<script id="model">
+const PROJECT_DATA = {
+  meta: {
+    title: "Makkah Projects",
+    subtitle: "Monthly Progress & Certified IPC Report",
+    workbook: "Makkah_Projects_Status_Sheet___Oct_2026.xlsx",
+    reportTag: "Makkah – Projects Dashboard-Oct-26",
+    dataDate: "2026-10-31",            // 'Progress Dashboard'!U53 — Reporting Period (input)
+    reportingPeriod: "October 2026",
+    currency: "SAR",
+    vatNote: "All values in SAR without VAT",
+    baselineReference: "Finish / Revised Finish Date (approved revised schedules)",
+    programmes: ["Jabal Omar Projects", "Masar Projects", "AIMS Project"],
+    sheets: ["Cover","Progress Dashboard","IPC Dashboard","Executive Dashboard","Projects Status -Progress","Projects Status- QS","JOH -Concrete by Month"],
+    scheduleNote: "Civil Defense excluded from schedule charts — no baseline dates yet. Variance = Actual % − Planned %.",
+    progressBands: [
+      {key:"completed", label:"Completed (≥95%)", min:0.95, max:Infinity},
+      {key:"advanced",  label:"Advanced (75–95%)", min:0.75, max:0.95},
+      {key:"inprog",    label:"In progress (50–75%)", min:0.5, max:0.75},
+      {key:"early",     label:"Early (<50%)", min:-Infinity, max:0.5}
+    ]
+  },
+  // ---- Raw rows: 'Projects Status -Progress' (A5:H15) joined with 'Projects Status- QS' (A5:M15, D20:G28)
+  projects: [
+    { id:"JO-01", name:"EPS2", programme:"Jabal Omar Projects", duration:"3 Months",
+      start:"2025-07-27", planFinish:"2026-01-26", forecastFinish:"2026-11-15", planned:1, actual:0.99,
+      summary:["EPS02 project works are complete, with the remaining snag list items currently being closed out."],
+      qs:{ contractValue:15033822, advPayment:1503382, advRecovered:-1470241.21, certified:14702412.1, retentionRate:0.15, netIpc:null, pendingIpc:0, previousIpc:14702412.1 } },
+    { id:"JO-02", name:"Road A&B", programme:"Jabal Omar Projects", duration:"12 Months",
+      start:"2026-01-01", planFinish:"2026-12-31", forecastFinish:"2026-12-31", planned:0.8183, actual:0.8183,
+      summary:["Asphalt: Zones 01 & 03 fully completed; Zone 02 at 80%.","Asphalt Zone 04: Base Course completed; Wearing Course 20%; remaining works on hold per Client instruction pending RCC Toilets Area works.","Asphalt Zone 05: Approximately 50% completed (both layers).","Temporary Fencing & Banners: Installation completed.","Street Lighting: Poles fully installed in Zones 01, 02 & 03; approximately 50% in Zone 04.","Sidewalks: Completed in Zones 01, 02 & 03; approximately 50% in Zone 04.","Remaining Works: Road marking, kerbstone painting, catch basin covers (20% done, 80% remaining), and CCTV fixtures & system installation.","Completion Forecast: Remaining construction works forecast to complete before 31-Dec-2026.","Irrigation: Excluded from current scope per Client's previous instruction; pending further confirmation."],
+      qs:{ contractValue:10747481.36, advPayment:999858.3, advRecovered:-445220.334, certified:4452203.34, retentionRate:0.15, netIpc:null, pendingIpc:0, previousIpc:2680010.35 } },
+    { id:"JO-03", name:"Radial Spine 4.5", programme:"Jabal Omar Projects", duration:"8 Months",
+      start:"2025-10-15", planFinish:"2027-01-31", forecastFinish:"2027-01-31", planned:0.8197, actual:0.8113,
+      summary:["Variation Order: VO for additional corridors and Triangle Area works prepared.","Revised Schedule: Submitted and approved, with revised completion date of 31-Jan-2027.","Corridor 01: Fully completed (100%).","Corridors 02 & 03: Approximately 80% complete; remaining works expected within the next 10 days.","Radial Spine 04: Fully completed, including testing and As-Built documentation.","Overpass 02: All works completed.","Fiber Optic: Remaining cable pulling from FEC cabinets in RS 04 & RS 05 Technical Gallery to the CCMS Room in RS 01.","Triangle Area: Only remaining civil activity is Slab on Grade (SOG) casting, required before interlock installation.","Triangle Area: GRC wall materials expected within 2 weeks, plus ~1 week installation; completion forecast within ~3 weeks.","Radial Spine 05: Granite installation ~80% complete; remaining works in progress.","Radial Spine 05: Outstanding – street lighting poles, lighting fixtures, CCTV system, and PA system installation; all materials on site."],
+      qs:{ contractValue:9997777, advPayment:999777.7, advRecovered:-679749.8, certified:6797498.04, retentionRate:0.15, netIpc:null, pendingIpc:0, previousIpc:6797498.04 } },
+    { id:"JO-04", name:"Storm water tank", programme:"Jabal Omar Projects", duration:"5 Months",
+      start:"2025-10-01", planFinish:"2026-12-31", forecastFinish:"2026-11-15", planned:1, actual:0.9321,
+      summary:["Waterproofing: All waterproofing works completed.","Backfilling: Internal ~80% complete; external (road side and around tank external sides) ~80% complete.","Steel Structure: Concrete foundations in progress; material sample approved, materials expected within the next week.","Pump Room: Remaining works on the Pump Room wall; column reinforcement completed, concrete casting scheduled for the day after tomorrow, followed by blockwork and electrical works.","Mechanical: All works completed except HDPE pipeline on steel structure and UPVC pipeline installation.","Remaining Works: Tank roof waterproofing, backfilling above tank roof to final level, GRP ladders, and water tank covers.","Manholes: Concrete casting in progress; expected completion within the next 5 days.","Completion Forecast: All remaining works forecast by end of November 2026."],
+      qs:{ contractValue:4437182.98, advPayment:1268635.13599999, advRecovered:-1268635.13599999, certified:2927228.84, retentionRate:0.05, netIpc:null, pendingIpc:0, previousIpc:2927228.84 } },
+    { id:"MS-01", name:"ST05 - Internal Package", programme:"Masar Projects", duration:"6 Months",
+      start:"2025-09-10", planFinish:"2026-07-15", forecastFinish:"2026-09-10", planned:1, actual:1,
+      summary:[],
+      qs:{ contractValue:17000000, advPayment:1700000, advRecovered:-1566917.4, certified:15669173.98, retentionRate:null, netIpc:13318797.89, pendingIpc:0, previousIpc:15256475.2 } },
+    { id:"MS-02", name:"ST05 - External Package", programme:"Masar Projects", duration:"6 Months",
+      start:"2025-05-18", planFinish:"2025-11-18", forecastFinish:"2026-09-10", planned:1, actual:1,
+      summary:[],
+      qs:{ contractValue:52000000, advPayment:10400000, advRecovered:-10169285.82, certified:50846429.12, retentionRate:null, netIpc:38134821.84, pendingIpc:0, previousIpc:50660392.55 } },
+    { id:"MS-03", name:"Framework Agreement", programme:"Masar Projects", duration:"36 Months",
+      start:"2025-05-25", planFinish:"2028-05-25", forecastFinish:"2028-05-25", planned:0.9251, actual:0.9231,
+      summary:["Task Order Status: 35 tasks recorded in total.","Approved: 24 tasks with a total budget of SAR 19,707,616, including 4 tasks pending UAQ signature.","Cancelled: 4 tasks.","Under Review: 3 tasks.","Under Quotation: 4 tasks.","Progress of approved tasks: 15 tasks completed.","9 tasks have achieved progress between 50% and 95% Average 84%","1 task has achieved 25% progress.","1 task is currently on hold."],
+      qs:{ contractValue:19104195, advPayment:588553.8, advRecovered:-558682.8, certified:13432662.39, retentionRate:null, netIpc:11996042.22, pendingIpc:0, previousIpc:12571793.482 } },
+    { id:"MS-04", name:"Civil Defense", programme:"Masar Projects", duration:"19 Months",
+      start:null, planFinish:null, forecastFinish:null, planned:null, actual:0.012,
+      scheduleStatusOverride:"BASELINE UNDER REVIEW", scheduleStatusNote:"contract signed 12-Oct-26",
+      summary:["Baseline Schedule: Rev. 01 submitted and currently under review.","Contract Status: Contract signed on 12-Oct-2026.","Commencement Date: Triggered by receipt of the advance payment or expiry of 45 days from contract signing, whichever occurs first.","Shoring System: Under technical study and evaluation in preparation for execution."],
+      qs:{ contractValue:30324288, advPayment:null, advRecovered:null, certified:null, retentionRate:null, netIpc:null, pendingIpc:0, previousIpc:0 } },
+    { id:"AI-01", name:"Jabal Omar Hotel", programme:"AIMS Project", duration:"20 Months",
+      start:"2024-03-11", planFinish:"2026-12-31", forecastFinish:"2026-12-31", planned:0.999, actual:0.9822,
+      summary:["Updated IFC drawings received on 16-Sep-2026.","Core Wall: Roof Floor to Upper Roof Floor completed.","Core Wall: Upper Roof Floor to Top Roof in progress – 40%.","Roof Floor Slab: Formwork in progress – 60%.","Columns: Concrete casting from 26th Floor to Roof Floor completed.","Rebar: On hold pending verification of updated IFC drawings received 31-Oct-2026 (Ref. VCC-RFI-C0-0180).","Staircases: Concrete works ongoing.","Staircase 01: Remaining concrete for 18th–19th Floor and 26th Floor–Upper Roof, in coordination with slab Part 02.","Staircase 02: Concrete completed up to Roof Floor; Roof Floor to Upper Roof in progress.","Blockwork: Mock-up Floor (10th) completed to mid-level as instructed by the Client.","Blockwork: 3rd Basement 99%, 2nd Basement 85%, 1st Basement 75%.","Concrete Volume: 1,438.31 m³ poured this month – a record monthly achievement.","EOT Claim No. 05: Submitted for 26th Floor Slab delay (31-Aug-2026 to 08-Oct-2026).","Forecast Schedule: Submitted, projecting completion by 31-Dec-2026.","Helipad Floor: Cancelled per latest IFC drawings.","Wind Tunnel: ERGA Letter No. 216 received; technical review and verification in progress."],
+      qs:{ contractValue:null, advPayment:6670000/1.15, advRecovered:-5377083.96, certified:93961547.17, retentionRate:null, netIpc:85858577.24, pendingIpc:0, previousIpc:92408626.34, certifiedInclVat:93961547.17*1.15 } }
+  ],
+  // ---- 'JOH -Concrete by Month' A4:B30
+  concrete: [
+    ["2024-08",3387.47],["2024-09",4159.99694],["2024-10",85.38],["2024-11",682.2974],["2024-12",716.9],
+    ["2025-01",1340.1226],["2025-02",1020.54],["2025-03",548.8693],["2025-04",859.1307],["2025-05",0],["2025-06",1041.3111],
+    ["2025-07",249.4214],["2025-08",637.675],["2025-09",728.1325],["2025-10",1828.2805],["2025-11",1281.2095],["2025-12",2079.4488],
+    ["2026-01",2063.6412],["2026-02",1951.8898],["2026-03",1490.2522],["2026-04",1593.5478],["2026-05",716.43],["2026-06",2399.31],
+    ["2026-07",2441.5422],["2026-08",979.3],["2026-09",828],["2026-10",1438.3]
+  ]
+};
+
+// ---------- date helpers (Excel serial arithmetic = whole-day differences) ----------
+const DAY = 86400000;
+const toUTC = s => s ? Date.UTC(+s.slice(0,4), +s.slice(5,7)-1, +s.slice(8,10)) : null;
+const daysBetween = (a,b) => (a && b) ? Math.round((toUTC(b)-toUTC(a))/DAY) : null;
+
+// ---------- per-project derived fields (one row of the helper tables) ----------
+function enrich(p){
+  const hasSched = p.planned !== null && p.start !== null;
+  const variance = hasSched ? p.actual - p.planned : null;                        // 'Progress Dashboard'!D = C − B
+  const delayDays = hasSched ? daysBetween(p.planFinish, p.forecastFinish) : null;// H = G − F
+  const durationDays = hasSched ? daysBetween(p.start, p.forecastFinish) : null;   // S = G − E
+  // E65 status formula
+  let status, statusPct = null;
+  if (!hasSched) { status = p.scheduleStatusOverride || "NO BASELINE"; }
+  else if (p.actual >= 1) status = "COMPLETED";
+  else if (variance >= 0) status = "ON TRACK";
+  else if (-variance > 0.1) { status = "CRITICAL DELAY"; statusPct = -variance; }
+  else { status = "BEHIND PLAN"; statusPct = -variance; }
+  const spi = hasSched && p.planned > 0 ? p.actual / p.planned : null;             // derived: Actual% ÷ Planned%
+  const band = PROJECT_DATA.meta.progressBands.find(b => p.actual >= b.min && p.actual < b.max);
+  // QS block
+  const q = p.qs;
+  const certified = q.certified ?? 0;
+  const advOutstanding = (q.advPayment ?? 0) + (q.advRecovered ?? 0);              // F = D + E
+  const certifiedPct = q.contractValue ? certified / q.contractValue : null;        // H = G / C
+  const netIpc = q.netIpc !== null ? q.netIpc : (q.retentionRate !== null ? certified - q.retentionRate * certified : null); // I
+  const cashToDate = (netIpc ?? 0) + (q.advPayment ?? 0);                           // J = I + D
+  const remainingIpc = q.contractValue ? q.contractValue - (certified + (q.pendingIpc ?? 0)) : null; // L
+  const remainingPct = certifiedPct !== null ? 1 - certifiedPct : null;             // M
+  const thisMonthIpc = certified - (q.previousIpc ?? 0);                            // F20 = G − E
+  return Object.assign({}, p, { hasSched, variance, delayDays, durationDays, status, statusPct, spi, band: band ? band.key : null,
+    certified, advOutstanding, certifiedPct, netIpc, cashToDate, remainingIpc, remainingPct, thisMonthIpc });
+}
+const ALL = PROJECT_DATA.projects.map(enrich);
+
+// ---------- aggregate formulas (KPI cards / total rows) ----------
+const avg = a => a.length ? a.reduce((s,x)=>s+x,0)/a.length : null;
+const sum = a => a.reduce((s,x)=>s+x,0);
+function aggregate(rows){
+  const sched = rows.filter(r => r.hasSched);
+  const planned = sched.map(r=>r.planned), actual = sched.map(r=>r.actual), vari = sched.map(r=>r.variance), delays = sched.map(r=>r.delayDays);
+  const maxDelay = delays.length ? Math.max(...delays) : null;
+  const maxDelayProj = maxDelay !== null ? sched.find(r=>r.delayDays===maxDelay).name : null;
+  const bands = {}; PROJECT_DATA.meta.progressBands.forEach(b => bands[b.key] = sched.filter(r=>r.band===b.key).length);
+  const prev = sum(rows.map(r=>r.qs.previousIpc ?? 0)), cur = sum(rows.map(r=>r.certified)), mth = sum(rows.map(r=>r.thisMonthIpc));
+  const active = rows.filter(r=>r.certified>0);
+  const maxIpc = active.length ? Math.max(...active.map(r=>r.certified)) : null;
+  return {
+    tracked: sched.length, trackedAll: rows.length,
+    avgPlanned: avg(planned), avgActual: avg(actual), avgVariance: avg(vari),
+    behind: sched.filter(r=>r.variance<0).length,
+    maxDelay, maxDelayProj, avgDelay: avg(delays),
+    finishSlipped: sched.filter(r=>r.delayDays>0).length, finishHeld: sched.filter(r=>r.delayDays<=0).length,
+    spi: (avg(planned) && avg(actual)) ? avg(actual)/avg(planned) : null,
+    bands,
+    ipcPrevious: prev, ipcCurrent: cur, ipcThisMonth: mth, ipcMovementPct: prev ? mth/prev : null,
+    ipcActive: active.length, ipcMax: maxIpc, ipcMaxProj: maxIpc!==null ? active.find(r=>r.certified===maxIpc).name : null,
+    ipcAvgActive: active.length ? cur/active.length : null,
+    budgetTotal: sum(rows.map(r=>r.qs.contractValue ?? 0))
+  };
+}
+const CONCRETE = (()=>{ let c=0; return PROJECT_DATA.concrete.map(([m,v])=>({month:m, volume:v, cumulative:(c+=v)})); })();
+const CONCRETE_TOTAL = sum(PROJECT_DATA.concrete.map(x=>x[1]));
+const CONCRETE_PEAK = CONCRETE.reduce((a,b)=> b.volume>a.volume ? b : a);
+if (typeof module !== "undefined") module.exports = { PROJECT_DATA, ALL, aggregate, CONCRETE, CONCRETE_TOTAL, CONCRETE_PEAK, enrich };
+</script>
+
+<!-- ============================================================
+     UI LAYER
+     ============================================================ -->
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const icons = () => { if (window.lucide && lucide.createIcons) lucide.createIcons(); };
+  const fmtPct = (x,d=1) => x===null||x===undefined||isNaN(x) ? "—" : (x*100).toFixed(d)+"%";
+  const fmtSPct = (x,d=1) => x===null||isNaN(x) ? "—" : (x>=0?"+":"")+(x*100).toFixed(d)+"%";
+  const fmtNum = (x,d=0) => x===null||x===undefined||isNaN(x) ? "—" : x.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fmtM = x => x===null ? "—" : (x/1e6).toFixed(1)+"M";
+  const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const fmtDate = s => s ? `${s.slice(8,10)}-${MON[+s.slice(5,7)-1]}-${s.slice(2,4)}` : "—";
+  const fmtMonth = m => `${MON[+m.slice(5,7)-1]}-${m.slice(2,4)}`;
+  const quarterOf = s => s ? `${s.slice(0,4)}-Q${Math.floor((+s.slice(5,7)-1)/3)+1}` : null;
+  const stClass = s => s==="COMPLETED"?"COMPLETED":s==="ON TRACK"?"ONTRACK":s==="BEHIND PLAN"?"BEHIND":s==="CRITICAL DELAY"?"CRITICAL":"REVIEW";
+  const stIcon = s => s==="COMPLETED"?"check-circle-2":s==="ON TRACK"?"circle-check":s==="BEHIND PLAN"?"alert-triangle":s==="CRITICAL DELAY"?"octagon-alert":"file-search";
+  const stColor = s => s==="COMPLETED"||s==="ON TRACK" ? "#10b981" : s==="BEHIND PLAN" ? "#f59e0b" : s==="CRITICAL DELAY" ? "#ef4444" : "#3b82f6";
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  // ---------- header ----------
+  const M = PROJECT_DATA.meta;
+  $("#hClient").textContent = M.programmes.join(" · ");
+  $("#hDate").textContent = fmtDate(M.dataDate) + " (" + M.reportingPeriod + ")";
+  $("#hBase").textContent = M.baselineReference;
+  $("#hSrc").textContent = M.workbook;
+  $("#hSync").textContent = new Date().toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  $("#foot").innerHTML = `<b>Data lineage.</b> Embedded dataset extracted from <i>${esc(M.workbook)}</i> (${M.sheets.length} sheets: ${M.sheets.join(", ")}). ${esc(M.scheduleNote)} Headline averages are simple averages across tracked projects, exactly as the workbook computes them (“weighted equally across projects”). SPI shown here is a derived index (Actual % ÷ Planned %) — the workbook holds no cost-loaded baseline, so CPI/EAC are not computed. ${esc(M.vatNote)}. Certified IPC values rounded to nearest unit for display; calculations run on full precision.`;
+
+  // ---------- state ----------
+  const state = { prog:"", proj:"", status:"", from:"", to:"", q:"", sort:{key:"id",dir:1}, view:"schedule" };
+  const uniq = a => [...new Set(a)];
+  const fill = (sel, vals, fmt=(v=>v)) => vals.forEach(v => { const o=document.createElement("option"); o.value=v; o.textContent=fmt(v); sel.appendChild(o); });
+  fill($("#fProg"), M.programmes);
+  fill($("#fProj"), ALL.map(p=>p.id), id => { const p=ALL.find(x=>x.id===id); return `${p.id} · ${p.name}`; });
+  fill($("#fStatus"), uniq(ALL.map(p=>p.status)));
+  const quarters = uniq(ALL.filter(p=>p.forecastFinish).map(p=>quarterOf(p.forecastFinish))).sort();
+  fill($("#fFrom"), quarters); fill($("#fTo"), quarters);
+
+  function filtered(){
+    return ALL.filter(p =>
+      (!state.prog || p.programme===state.prog) &&
+      (!state.proj || p.id===state.proj) &&
+      (!state.status || p.status===state.status) &&
+      (!state.from || (p.forecastFinish && quarterOf(p.forecastFinish) >= state.from)) &&
+      (!state.to || (p.forecastFinish && quarterOf(p.forecastFinish) <= state.to))
+    );
+  }
+  function searched(rows){
+    const q = state.q.trim().toLowerCase();
+    if(!q) return rows;
+    return rows.filter(p => [p.id,p.name,p.programme,p.status,p.duration,...(p.summary||[])].join(" ").toLowerCase().includes(q));
+  }
+
+  // ---------- KPI ribbon ----------
+  function kpi(opts){
+    const {icon,title,value,unit,badge,badgeCls,hint,acc,bar,planBar,spark} = opts;
+    return `<div class="kpi" style="--acc:${acc}">
+      <div class="t"><i data-lucide="${icon}"></i>${title}</div>
+      <div class="val">${value}${unit?`<small>${unit}</small>`:""}</div>
+      <div class="row"><span class="badge ${badgeCls}">${badge}</span><span class="hint" title="${esc(hint)}">${esc(hint)}</span></div>
+      ${spark ? `<div class="spark"><canvas></canvas></div>` : bar!==undefined ? `<div class="bar split"><i class="p" style="width:${Math.min(100,Math.max(0,planBar*100))}%"></i><i style="width:${Math.min(100,Math.max(0,bar*100))}%"></i></div>` : ""}
+    </div>`;
+  }
+  function renderKpis(rows, A){
+    const vCls = A.avgVariance===null?"neu":A.avgVariance>=0?"good":A.avgVariance>-0.1?"warn":"bad";
+    const spiCls = A.spi===null?"neu":A.spi>=1?"good":A.spi>=0.9?"warn":"bad";
+    const dCls = A.maxDelay===null?"neu":A.maxDelay<=0?"good":A.maxDelay<=60?"warn":"bad";
+    $("#kpis").innerHTML = [
+      kpi({icon:"target",title:"Average Planned %",value:fmtPct(A.avgPlanned),acc:"#3b82f6",badge:`${A.tracked} projects tracked`,badgeCls:"info",hint:"Weighted equally across projects",bar:A.avgPlanned,planBar:0}),
+      kpi({icon:"activity",title:"Average Actual %",value:fmtPct(A.avgActual),acc:"#10b981",badge:`${fmtSPct(A.avgVariance)} vs Planned`,badgeCls:vCls,hint:"Physical progress at data date",bar:A.avgActual,planBar:A.avgPlanned}),
+      kpi({icon:"diff",title:"Progress Variance",value:fmtSPct(A.avgVariance),acc:vCls==="good"?"#10b981":vCls==="warn"?"#f59e0b":"#ef4444",badge:`${A.behind} of ${A.tracked} behind plan`,badgeCls:A.behind?"warn":"good",hint:"Actual % − Planned %, portfolio average",spark:"variance"}),
+      kpi({icon:"flag",title:"Finish Milestones",value:`${A.finishHeld}<small>held</small> / ${A.finishSlipped}<small>slipped</small>`,acc:"#f59e0b",badge:A.finishSlipped?`${A.finishSlipped} forecast later than plan`:"All finishes on/ahead",badgeCls:A.finishSlipped?"warn":"good",hint:"Forecast/Actual finish vs Plan/Revised finish",bar:A.tracked?A.finishHeld/A.tracked:0,planBar:0}),
+      kpi({icon:"gauge",title:"SPI (Actual ÷ Planned)",value:A.spi===null?"—":A.spi.toFixed(3),acc:spiCls==="good"?"#10b981":spiCls==="warn"?"#f59e0b":"#ef4444",badge:A.spi===null?"n/a":A.spi>=1?"On / ahead of schedule":"Behind schedule",badgeCls:spiCls,hint:"Derived index on physical progress",bar:A.spi===null?0:Math.min(1,A.spi),planBar:1}),
+      kpi({icon:"calendar-clock",title:"Max Forecast Delay",value:A.maxDelay===null?"—":fmtNum(A.maxDelay),unit:"days",acc:dCls==="good"?"#10b981":dCls==="warn"?"#f59e0b":"#ef4444",badge:`Avg slip ${A.avgDelay===null?"—":fmtNum(A.avgDelay)} d`,badgeCls:dCls,hint:A.maxDelayProj||"—",spark:"delay"})
+    ].join("");
+    // mini sparkline bars inside KPI cards
+    document.querySelectorAll("#kpis .spark canvas").forEach((cv,i)=>{
+      const key = i===0 ? "variance" : "delayDays";
+      const sr = rows.filter(r=>r.hasSched);
+      const data = sr.map(r=>r[key]);
+      mkChart(cv, { type:"bar", data:{ labels:sr.map(r=>r.name), datasets:[{ data, backgroundColor:data.map(v=> key==="variance" ? (v>=0?"#10b981":v>-0.1?"#f59e0b":"#ef4444") : (v<=0?"#10b981":v<=60?"#f59e0b":"#ef4444")), borderRadius:2, barPercentage:.8, categoryPercentage:.9 }]},
+        options:{ responsive:true, maintainAspectRatio:false, animation:{duration:400}, plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=> key==="variance" ? fmtSPct(c.raw,2) : fmtNum(c.raw)+" days"}}}, scales:{x:{display:false},y:{display:false}} } });
+    });
+  }
+  function renderIpcKpis(A){
+    $("#kpisIpc").innerHTML = [
+      kpi({icon:"landmark",title:"Total Certified IPCs",value:`SAR ${fmtM(A.ipcCurrent)}`,acc:"#3b82f6",badge:"Cumulative to date",badgeCls:"info",hint:`SAR ${fmtNum(A.ipcCurrent)}`,bar:A.budgetTotal?A.ipcCurrent/A.budgetTotal:0,planBar:0}),
+      kpi({icon:"trending-up",title:"IPC This Month",value:`SAR ${fmtM(A.ipcThisMonth)}`,acc:"#10b981",badge:`${fmtSPct(A.ipcMovementPct)} vs previous`,badgeCls:A.ipcThisMonth>0?"good":"neu",hint:`SAR ${fmtNum(A.ipcThisMonth)}`,bar:A.ipcCurrent?A.ipcThisMonth/A.ipcCurrent:0,planBar:0}),
+      kpi({icon:"briefcase",title:"Active Projects",value:A.ipcActive,acc:"#f59e0b",badge:`of ${A.trackedAll} tracked`,badgeCls:"neu",hint:"Projects with certified IPC > 0",bar:A.trackedAll?A.ipcActive/A.trackedAll:0,planBar:0}),
+      kpi({icon:"crown",title:"Highest Project Value",value:`SAR ${fmtM(A.ipcMax)}`,acc:"#8b5cf6",badge:A.ipcMaxProj||"—",badgeCls:"info",hint:`${fmtPct(A.ipcCurrent?A.ipcMax/A.ipcCurrent:null)} of total`,bar:A.ipcCurrent?A.ipcMax/A.ipcCurrent:0,planBar:0}),
+      kpi({icon:"divide",title:"Average IPC / Project",value:`SAR ${fmtM(A.ipcAvgActive)}`,acc:"#3b82f6",badge:"Active projects only",badgeCls:"neu",hint:`SAR ${fmtNum(A.ipcAvgActive)}`,bar:A.ipcMax?A.ipcAvgActive/A.ipcMax:0,planBar:0})
+    ].join("");
+  }
+
+  // ---------- charts ----------
+  Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+  Chart.defaults.color = "#94a3b8";
+  Chart.defaults.borderColor = "rgba(148,163,184,.12)";
+  const TT = { backgroundColor:"#0b1220", borderColor:"rgba(148,163,184,.25)", borderWidth:1, titleColor:"#f8fafc", bodyColor:"#e2e8f0", padding:12, cornerRadius:8, titleFont:{weight:"700"}, displayColors:true, boxPadding:4 };
+  const charts = {};
+  function mkChart(cv, cfg){
+    const id = cv.id || (cv.__id ||= "k"+Math.random());
+    if(charts[id]) charts[id].destroy();
+    charts[id] = new Chart(cv, cfg);
+    return charts[id];
+  }
+  function setEmpty(canvas, show, msg="No projects match the current filters"){
+    const host = canvas.parentElement; let e = host.querySelector(".empty");
+    if(show){ if(!e){ e=document.createElement("div"); e.className="empty"; host.appendChild(e);} e.textContent=msg; } else if(e) e.remove();
+  }
+  const base = (extra={}) => ({ responsive:true, maintainAspectRatio:false, animation:{duration:600,easing:"easeOutQuart"}, interaction:{mode:"index",intersect:false}, plugins:{legend:{display:false},tooltip:TT}, ...extra });
+  const dd = PROJECT_DATA.meta.dataDate;
+
+  function renderCharts(rows){
+    const sr = rows.filter(r=>r.hasSched);
+    const A = aggregate(rows);
+    // 1. Planned vs Actual
+    setEmpty($("#cPlanAct"), !sr.length);
+    mkChart($("#cPlanAct"), { type:"bar", data:{ labels:sr.map(r=>r.name), datasets:[
+        { label:"Planned %", data:sr.map(r=>r.planned), backgroundColor:"#3b82f6", borderRadius:4, borderSkipped:"bottom", maxBarThickness:34 },
+        { label:"Actual %", data:sr.map(r=>r.actual), backgroundColor:"#d97706", borderRadius:4, borderSkipped:"bottom", maxBarThickness:34 }]},
+      options: base({ scales:{ x:{grid:{display:false},ticks:{font:{size:11}}}, y:{min:0,max:1,ticks:{callback:v=>(v*100)+"%"}} },
+        plugins:{ legend:{display:false}, tooltip:{...TT, callbacks:{ title:i=>`${sr[i[0].dataIndex].name}  ·  Data date ${fmtDate(dd)}`, label:c=>` ${c.dataset.label}: ${fmtPct(c.raw,2)}`, afterBody:i=>{const r=sr[i[0].dataIndex]; return [`Variance: ${fmtSPct(r.variance,2)}`,`Delay: ${r.delayDays} days`,`Status: ${r.status}`];} } } } }) });
+
+    // 2. Status donut (workbook banding)
+    const bands = PROJECT_DATA.meta.progressBands;
+    const bvals = bands.map(b=>A.bands[b.key]||0);
+    setEmpty($("#cStatus"), !sr.length);
+    mkChart($("#cStatus"), { type:"doughnut", data:{ labels:bands.map(b=>b.label), datasets:[{ data:bvals, backgroundColor:["#059669","#3b82f6","#d97706","#64748b"], borderColor:"#1e293b", borderWidth:2, hoverOffset:6 }]},
+      options:{ responsive:true, maintainAspectRatio:false, cutout:"62%", plugins:{ legend:{position:"right",labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:"rectRounded",padding:12,font:{size:11},generateLabels:ch=>ch.data.labels.map((l,i)=>({text:`${l} — ${bvals[i]}`,fillStyle:ch.data.datasets[0].backgroundColor[i],strokeStyle:"transparent",index:i,hidden:false}))}}, tooltip:{...TT, callbacks:{label:c=>` ${c.raw} project${c.raw===1?"":"s"} (${sr.length?((c.raw/sr.length)*100).toFixed(1):0}%)`}} } },
+      plugins:[{ id:"center", afterDraw(ch){ const {ctx,chartArea:{left,right,top,bottom}}=ch; const x=(left+right)/2,y=(top+bottom)/2; ctx.save(); ctx.textAlign="center"; ctx.fillStyle="#f8fafc"; ctx.font="800 26px Inter"; ctx.fillText(sr.length,x,y+4); ctx.fillStyle="#94a3b8"; ctx.font="600 10px Inter"; ctx.fillText("PROJECTS",x,y+20); ctx.restore(); } }] });
+
+    // 3. Variance sorted
+    const vs = [...sr].sort((a,b)=> b.variance-a.variance || a.id.localeCompare(b.id));
+    setEmpty($("#cVar"), !sr.length);
+    mkChart($("#cVar"), { type:"bar", data:{ labels:vs.map(r=>r.name), datasets:[{ label:"Variance", data:vs.map(r=>r.variance), backgroundColor:vs.map(r=> r.variance>=0?"#059669":r.variance>-0.1?"#d97706":"#ef4444"), borderRadius:4, maxBarThickness:22 }]},
+      options: base({ indexAxis:"y", interaction:{mode:"nearest",axis:"y",intersect:false}, scales:{ x:{ticks:{callback:v=>(v*100).toFixed(2)+"%"},grid:{color:ctx=>ctx.tick.value===0?"rgba(148,163,184,.5)":"rgba(148,163,184,.12)"}}, y:{grid:{display:false},ticks:{font:{size:11}}} },
+        plugins:{ legend:{display:false}, tooltip:{...TT, callbacks:{ title:i=>vs[i[0].dataIndex].name, label:c=>{const r=vs[c.dataIndex]; return [` Variance: ${fmtSPct(r.variance,2)}`,` Planned ${fmtPct(r.planned,2)} · Actual ${fmtPct(r.actual,2)}`,` Status: ${r.status}`];} } } } }) });
+
+    // 4. Gantt (floating bars on day axis)
+    const ep = "2024-01-01"; const d = s => daysBetween(ep,s);
+    const gs = [...sr].sort((a,b)=>toUTC(a.start)-toUTC(b.start));
+    setEmpty($("#cGantt"), !sr.length);
+    const ddx = d(dd);
+    mkChart($("#cGantt"), { type:"bar", data:{ labels:gs.map(r=>r.name), datasets:[{ label:"Start → Forecast Finish", data:gs.map(r=>[d(r.start),d(r.forecastFinish)]), backgroundColor:gs.map(r=> r.delayDays>0?"rgba(239,68,68,.75)":"rgba(59,130,246,.8)"), borderRadius:4, maxBarThickness:18, borderSkipped:false }]},
+      options: base({ indexAxis:"y", interaction:{mode:"nearest",axis:"y",intersect:false}, scales:{ x:{min:d("2024-01-01"),max:d("2028-07-01"),ticks:{stepSize:182,callback:v=>{const t=new Date(toUTC(ep)+v*DAY);return MON[t.getUTCMonth()]+"-"+String(t.getUTCFullYear()).slice(2);}},grid:{color:"rgba(148,163,184,.1)"}}, y:{grid:{display:false},ticks:{font:{size:11}}} },
+        plugins:{ legend:{display:false}, tooltip:{...TT, callbacks:{ title:i=>gs[i[0].dataIndex].name, label:c=>{const r=gs[c.dataIndex]; return [` Start: ${fmtDate(r.start)}`,` Plan/Revised finish: ${fmtDate(r.planFinish)}`,` Forecast/Actual finish: ${fmtDate(r.forecastFinish)}`,` Delay: ${r.delayDays} days · Duration ${r.durationDays} days`];} } } } }),
+      plugins:[{ id:"marks", afterDatasetsDraw(ch){ const {ctx,scales:{x,y}}=ch; ctx.save();
+          // data-date line
+          const px=x.getPixelForValue(ddx); ctx.strokeStyle="#f59e0b"; ctx.setLineDash([4,4]); ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(px,y.top); ctx.lineTo(px,y.bottom); ctx.stroke(); ctx.setLineDash([]);
+          ctx.fillStyle="#fcd34d"; ctx.font="600 10px Inter"; ctx.textAlign="center"; ctx.fillText("Data date",px,y.top-4);
+          // plan-finish markers
+          gs.forEach((r,i)=>{ const mx=x.getPixelForValue(d(r.planFinish)), my=y.getPixelForValue(i); ctx.fillStyle="#f8fafc"; ctx.beginPath(); ctx.moveTo(mx,my-7); ctx.lineTo(mx+5,my); ctx.lineTo(mx,my+7); ctx.lineTo(mx-5,my); ctx.closePath(); ctx.fill(); });
+          ctx.restore(); } }] });
+
+    // 5. S-curve (cumulative concrete) + monthly volume
+    const showJOH = rows.some(r=>r.id==="AI-01");
+    setEmpty($("#cSCurve"), !showJOH, "Jabal Omar Hotel is outside the current filter"); setEmpty($("#cConcrete"), !showJOH, "");
+    mkChart($("#cSCurve"), { type:"line", data:{ labels:CONCRETE.map(c=>fmtMonth(c.month)), datasets:[{ label:"Cumulative poured (m³)", data:CONCRETE.map(c=>c.cumulative), borderColor:"#3b82f6", backgroundColor:"rgba(59,130,246,.12)", fill:true, borderWidth:2, pointRadius:0, pointHoverRadius:5, tension:.3 }]},
+      options: base({ scales:{ x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,font:{size:10}}}, y:{ticks:{callback:v=>fmtNum(v)}} }, plugins:{ legend:{display:false}, tooltip:{...TT, callbacks:{ title:i=>`${i[0].label} · cumulative`, label:c=>{const k=CONCRETE[c.dataIndex]; return [` Cumulative: ${fmtNum(k.cumulative,1)} m³`,` Month: ${fmtNum(k.volume,1)} m³`,` ${fmtPct(k.cumulative/CONCRETE_TOTAL,1)} of ${fmtNum(CONCRETE_TOTAL)} m³ to date`];} } } } }) });
+    mkChart($("#cConcrete"), { type:"bar", data:{ labels:CONCRETE.map(c=>fmtMonth(c.month)), datasets:[{ label:"Monthly volume (m³)", data:CONCRETE.map(c=>c.volume), backgroundColor:CONCRETE.map(c=> c===CONCRETE_PEAK?"#ef4444":"#d97706"), borderRadius:3, maxBarThickness:26 }]},
+      options: base({ scales:{ x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,font:{size:10}}}, y:{ticks:{callback:v=>fmtNum(v)}} }, plugins:{ legend:{display:false}, tooltip:{...TT, callbacks:{ label:c=>` ${fmtNum(c.raw,1)} m³${CONCRETE[c.dataIndex]===CONCRETE_PEAK?"  (peak month)":""}` } } } }) });
+
+    // 6. IPC grouped
+    setEmpty($("#cIpc"), !rows.length);
+    mkChart($("#cIpc"), { type:"bar", data:{ labels:rows.map(r=>r.name), datasets:[
+        { label:"Previous", data:rows.map(r=>r.qs.previousIpc??0), backgroundColor:"#3b82f6", borderRadius:3, maxBarThickness:22 },
+        { label:"This month", data:rows.map(r=>r.thisMonthIpc), backgroundColor:"#d97706", borderRadius:3, maxBarThickness:22 },
+        { label:"Current", data:rows.map(r=>r.certified), backgroundColor:"#059669", borderRadius:3, maxBarThickness:22 }]},
+      options: base({ scales:{ x:{grid:{display:false},ticks:{font:{size:11}}}, y:{ticks:{callback:v=>fmtM(v)}} }, plugins:{ legend:{display:false}, tooltip:{...TT, callbacks:{ label:c=>` ${c.dataset.label}: SAR ${fmtNum(c.raw)}`, afterBody:i=>{const r=rows[i[0].dataIndex]; return [`Share of monthly certification: ${fmtPct(A.ipcThisMonth?r.thisMonthIpc/A.ipcThisMonth:null)}`,`Contribution to total: ${fmtPct(A.ipcCurrent?r.certified/A.ipcCurrent:null)}`];} } } } }) });
+
+    // 7. Share donut
+    const ss = [...rows].sort((a,b)=>b.certified-a.certified);
+    const pal = ["#3b82f6","#d97706","#059669","#ef4444","#8b5cf6","#0ea5e9","#f472b6","#84cc16","#64748b"];
+    setEmpty($("#cIpcShare"), !rows.length);
+    mkChart($("#cIpcShare"), { type:"doughnut", data:{ labels:ss.map(r=>r.name), datasets:[{ data:ss.map(r=>r.certified), backgroundColor:ss.map((r,i)=>pal[i%pal.length]), borderColor:"#1e293b", borderWidth:2, hoverOffset:6 }]},
+      options:{ responsive:true, maintainAspectRatio:false, cutout:"60%", plugins:{ legend:{position:"right",labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:"rectRounded",padding:8,font:{size:10},generateLabels:ch=>ss.map((r,i)=>({text:`${r.name} — ${fmtPct(A.ipcCurrent?r.certified/A.ipcCurrent:0)}`,fillStyle:pal[i%pal.length],strokeStyle:"transparent",index:i,hidden:false}))}}, tooltip:{...TT, callbacks:{label:c=>` SAR ${fmtNum(c.raw)} (${fmtPct(A.ipcCurrent?c.raw/A.ipcCurrent:0)})`}} } },
+      plugins:[{ id:"center2", afterDraw(ch){ const {ctx,chartArea:{left,right,top,bottom}}=ch; const x=(left+right)/2,y=(top+bottom)/2; ctx.save(); ctx.textAlign="center"; ctx.fillStyle="#f8fafc"; ctx.font="800 18px Inter"; ctx.fillText(fmtM(A.ipcCurrent),x,y+3); ctx.fillStyle="#94a3b8"; ctx.font="600 9px Inter"; ctx.fillText("SAR CURRENT",x,y+17); ctx.restore(); } }] });
+
+    // 8. Bridge waterfall
+    const steps = [{label:"Previous", range:[0,A.ipcPrevious], kind:"total"}];
+    let run = A.ipcPrevious;
+    rows.forEach(r=>{ steps.push({label:r.name, range:[run, run+r.thisMonthIpc], kind:"move", v:r.thisMonthIpc}); run += r.thisMonthIpc; });
+    steps.push({label:"Current", range:[0,A.ipcCurrent], kind:"total"});
+    setEmpty($("#cBridge"), !rows.length);
+    const lo = Math.max(0, A.ipcPrevious*0.97);
+    mkChart($("#cBridge"), { type:"bar", data:{ labels:steps.map(s=>s.label), datasets:[{ data:steps.map(s=>s.range), backgroundColor:steps.map(s=> s.kind==="total"?"#3b82f6": s.v>=0?"#059669":"#ef4444"), borderRadius:3, borderSkipped:false, maxBarThickness:48 }]},
+      options: base({ scales:{ x:{grid:{display:false},ticks:{font:{size:11}}}, y:{min:lo, ticks:{callback:v=>fmtM(v)}} }, plugins:{ legend:{display:false}, tooltip:{...TT, callbacks:{ label:c=>{const s=steps[c.dataIndex]; return s.kind==="total" ? ` SAR ${fmtNum(s.range[1])}` : [` This month: SAR ${fmtNum(s.v)}`,` Running total: SAR ${fmtNum(s.range[1])}`];} } } } }),
+      plugins:[{ id:"wfl", afterDatasetsDraw(ch){ const {ctx,scales:{x,y}}=ch; ctx.save(); ctx.fillStyle="#cbd5e1"; ctx.font="600 10px Inter"; ctx.textAlign="center"; steps.forEach((s,i)=>{ if(s.kind==="move" && s.v){ ctx.fillText((s.v>0?"+":"")+fmtM(s.v), x.getPixelForValue(i), y.getPixelForValue(Math.max(...s.range))-6);} }); ctx.restore(); } }] });
+  }
+
+  // ---------- table ----------
+  const COLS = {
+    schedule: [
+      {k:"id",l:"ID",f:r=>`<span class="pid">${r.id}</span>`},
+      {k:"name",l:"Project",f:r=>`<span class="pname">${esc(r.name)}</span><div class="pid">${esc(r.programme)}</div>`},
+      {k:"duration",l:"Duration",f:r=>esc(r.duration)},
+      {k:"start",l:"Start",f:r=>fmtDate(r.start),sv:r=>r.start||""},
+      {k:"planFinish",l:"Plan Finish",f:r=>fmtDate(r.planFinish),sv:r=>r.planFinish||""},
+      {k:"forecastFinish",l:"Forecast / Actual Finish",f:r=>fmtDate(r.forecastFinish),sv:r=>r.forecastFinish||""},
+      {k:"delayDays",l:"Delay (d)",r:1,f:r=>r.delayDays===null?"<span class='zero'>n/a</span>":`<span class="${r.delayDays>0?"neg":r.delayDays<0?"pos":"zero"}">${r.delayDays>0?"+":""}${r.delayDays}</span>`,sv:r=>r.delayDays??-1e9},
+      {k:"planned",l:"Planned %",r:1,f:r=>fmtPct(r.planned,2),sv:r=>r.planned??-1},
+      {k:"actual",l:"Actual %",f:r=>`<div class="pg"><div class="bar"><i style="width:${(r.actual*100).toFixed(2)}%;background:${stColor(r.status)}"></i></div><b>${fmtPct(r.actual,2)}</b></div>`,sv:r=>r.actual},
+      {k:"variance",l:"Variance",r:1,f:r=>r.variance===null?"<span class='zero'>—</span>":`<span class="${r.variance>0?"pos":r.variance<0?"neg":"zero"}">${fmtSPct(r.variance,2)}</span>`,sv:r=>r.variance??-1e9},
+      {k:"spi",l:"SPI",r:1,f:r=>r.spi===null?"<span class='zero'>—</span>":r.spi.toFixed(3),sv:r=>r.spi??-1},
+      {k:"status",l:"Status",f:r=>`<span class="st ${stClass(r.status)}"><i data-lucide="${stIcon(r.status)}"></i>${r.status}${r.statusPct!==null?" "+fmtPct(r.statusPct,1):""}</span>`}
+    ],
+    ipc: [
+      {k:"id",l:"ID",f:r=>`<span class="pid">${r.id}</span>`},
+      {k:"name",l:"Project",f:r=>`<span class="pname">${esc(r.name)}</span><div class="pid">${esc(r.programme)}</div>`},
+      {k:"contract",l:"Revised Contract Value",r:1,f:r=>fmtNum(r.qs.contractValue),sv:r=>r.qs.contractValue??-1},
+      {k:"prev",l:"Previous Certified",r:1,f:r=>fmtNum(r.qs.previousIpc),sv:r=>r.qs.previousIpc},
+      {k:"month",l:"Certified This Month",r:1,f:r=>`<span class="${r.thisMonthIpc>0?"pos":"zero"}">${fmtNum(r.thisMonthIpc)}</span>`,sv:r=>r.thisMonthIpc},
+      {k:"cur",l:"Current Certified IPC",r:1,f:r=>`<b>${fmtNum(r.certified)}</b>`,sv:r=>r.certified},
+      {k:"cpct",l:"Certified %",f:r=>r.certifiedPct===null?"<span class='zero'>—</span>":`<div class="pg"><div class="bar"><i style="width:${Math.min(100,r.certifiedPct*100).toFixed(2)}%;background:#3b82f6"></i></div><b>${fmtPct(r.certifiedPct,2)}</b></div>`,sv:r=>r.certifiedPct??-1},
+      {k:"adv",l:"Adv. Outstanding",r:1,f:r=>fmtNum(r.advOutstanding,2),sv:r=>r.advOutstanding},
+      {k:"net",l:"Net IPC Payments",r:1,f:r=>fmtNum(r.netIpc,2),sv:r=>r.netIpc??-1},
+      {k:"cash",l:"Cash Received to Date",r:1,f:r=>fmtNum(r.cashToDate,2),sv:r=>r.cashToDate},
+      {k:"rem",l:"Remaining IPC",r:1,f:r=>fmtNum(r.remainingIpc,2),sv:r=>r.remainingIpc??-1},
+      {k:"rpct",l:"Remaining %",r:1,f:r=>fmtPct(r.remainingPct,2),sv:r=>r.remainingPct??-1}
+    ]
+  };
+  function renderTable(rows){
+    const cols = COLS[state.view];
+    const th = cols.map(c=>`<th class="${c.r?"r":""} ${state.sort.key===c.k?"sorted":""}" data-k="${c.k}">${c.l}<span class="si">${state.sort.key===c.k?(state.sort.dir>0?"▲":"▼"):"⇅"}</span></th>`).join("");
+    $("#tbl thead").innerHTML = `<tr>${th}</tr>`;
+    const col = cols.find(c=>c.k===state.sort.key) || cols[0];
+    const sv = col.sv || (r=>r[col.k]);
+    const sorted = [...rows].sort((a,b)=>{ const x=sv(a), y=sv(b); if(typeof x==="number"&&typeof y==="number") return (x-y)*state.sort.dir; return String(x).localeCompare(String(y))*state.sort.dir; });
+    const A = aggregate(rows);
+    let body = sorted.map(r=>`<tr data-id="${r.id}">${cols.map(c=>`<td class="${c.r?"r":""}">${c.f(r)}</td>`).join("")}</tr>`).join("");
+    if(rows.length){
+      if(state.view==="schedule"){
+        body += `<tr class="total"><td></td><td>PORTFOLIO AVERAGE</td><td></td><td></td><td></td><td>Avg slip ${A.avgDelay===null?"—":fmtNum(A.avgDelay)} d</td><td class="r">${A.maxDelay===null?"—":"max "+A.maxDelay}</td><td class="r">${fmtPct(A.avgPlanned,2)}</td><td><div class="pg"><div class="bar"><i style="width:${((A.avgActual||0)*100).toFixed(2)}%;background:#3b82f6"></i></div><b>${fmtPct(A.avgActual,2)}</b></div></td><td class="r ${A.avgVariance<0?"neg":"pos"}">${fmtSPct(A.avgVariance,2)}</td><td class="r">${A.spi===null?"—":A.spi.toFixed(3)}</td><td>${A.behind} behind / ${A.tracked} tracked</td></tr>`;
+      } else {
+        const sumQ = k => fmtNum(sum(rows.map(r=>r[k]??0)),2);
+        body += `<tr class="total"><td></td><td>TOTAL</td><td class="r">${fmtNum(A.budgetTotal)}</td><td class="r">${fmtNum(A.ipcPrevious)}</td><td class="r pos">${fmtNum(A.ipcThisMonth)}</td><td class="r"><b>${fmtNum(A.ipcCurrent)}</b></td><td>${fmtPct(A.budgetTotal?A.ipcCurrent/A.budgetTotal:null,2)} <span class="pid">(of priced contracts)</span></td><td class="r">${sumQ("advOutstanding")}</td><td class="r">${sumQ("netIpc")}</td><td class="r">${sumQ("cashToDate")}</td><td class="r">${sumQ("remainingIpc")}</td><td class="r">—</td></tr>`;
+      }
+    } else body = `<tr><td colspan="${cols.length}" style="text-align:center;color:var(--s500);padding:30px">No projects match the current filters / search.</td></tr>`;
+    $("#tbl tbody").innerHTML = body;
+    $("#tInfo").textContent = `${rows.length} of ${ALL.length} projects shown · sorted by ${col.l} (${state.sort.dir>0?"asc":"desc"})`;
+    icons();
+  }
+
+  // ---------- drawer ----------
+  function openDrawer(id){
+    const r = ALL.find(p=>p.id===id); if(!r) return;
+    const A = aggregate(ALL);
+    const q = r.qs;
+    $("#drawer").innerHTML = `
+      <div class="top">
+        <div><span class="pid">${r.id} · ${esc(r.programme)}</span><h2>${esc(r.name)}</h2>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><span class="st ${stClass(r.status)}"><i data-lucide="${stIcon(r.status)}"></i>${r.status}${r.statusPct!==null?" "+fmtPct(r.statusPct,1):""}</span>${r.scheduleStatusNote?`<span class="badge info">${esc(r.scheduleStatusNote)}</span>`:""}<span class="badge neu">Original duration ${esc(r.duration)}</span></div></div>
+        <button class="btn close" id="dClose"><i data-lucide="x" style="width:14px;height:14px"></i>Close</button>
+      </div>
+      <h4>Schedule &amp; physical progress</h4>
+      <div class="dgrid">
+        <div class="dcell"><div class="k">Start</div><div class="v">${fmtDate(r.start)}</div></div>
+        <div class="dcell"><div class="k">Plan / Revised finish</div><div class="v">${fmtDate(r.planFinish)}</div></div>
+        <div class="dcell"><div class="k">Forecast / Actual finish</div><div class="v">${fmtDate(r.forecastFinish)}</div></div>
+        <div class="dcell"><div class="k">Delay (days)</div><div class="v ${r.delayDays>0?"neg":r.delayDays<0?"pos":""}">${r.delayDays===null?"n/a":(r.delayDays>0?"+":"")+r.delayDays}</div></div>
+        <div class="dcell"><div class="k">Planned %</div><div class="v">${fmtPct(r.planned,2)}</div></div>
+        <div class="dcell"><div class="k">Actual %</div><div class="v">${fmtPct(r.actual,2)}</div></div>
+        <div class="dcell"><div class="k">Variance</div><div class="v ${r.variance<0?"neg":r.variance>0?"pos":""}">${r.variance===null?"—":fmtSPct(r.variance,2)}</div></div>
+        <div class="dcell"><div class="k">SPI (A ÷ P)</div><div class="v">${r.spi===null?"—":r.spi.toFixed(3)}</div></div>
+        <div class="dcell"><div class="k">Elapsed duration</div><div class="v">${r.durationDays===null?"—":r.durationDays+" d"}</div></div>
+        <div class="dcell"><div class="k">Progress band</div><div class="v" style="font-size:12px">${r.hasSched?PROJECT_DATA.meta.progressBands.find(b=>b.key===r.band).label:"Excluded (no baseline)"}</div></div>
+      </div>
+      <div class="bar split" style="height:10px"><i class="p" style="width:${((r.planned||0)*100).toFixed(2)}%"></i><i style="width:${(r.actual*100).toFixed(2)}%;background:${stColor(r.status)}"></i></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px"><span>Actual ${fmtPct(r.actual,2)}</span><span>Planned ${fmtPct(r.planned,2)}</span></div>
+      <h4>Certified IPC &amp; cash (SAR, without VAT)</h4>
+      <table class="qs">
+        <tr><td>Revised contract value</td><td>${fmtNum(q.contractValue,2)}</td></tr>
+        <tr><td>Advance payment</td><td>${fmtNum(q.advPayment,2)}</td></tr>
+        <tr><td>Advance recovered</td><td>${fmtNum(q.advRecovered,2)}</td></tr>
+        <tr><td>Advance outstanding (= Adv + Recovered)</td><td>${fmtNum(r.advOutstanding,2)}</td></tr>
+        <tr><td>Previous certified IPC</td><td>${fmtNum(q.previousIpc,2)}</td></tr>
+        <tr><td>Certified this month (= Current − Previous)</td><td class="${r.thisMonthIpc>0?"pos":""}">${fmtNum(r.thisMonthIpc,2)}</td></tr>
+        <tr><td>Total certified IPCs (current)</td><td><b>${fmtNum(r.certified,2)}</b></td></tr>
+        ${q.certifiedInclVat?`<tr><td>Total certified incl. 15% VAT</td><td>${fmtNum(q.certifiedInclVat,2)}</td></tr>`:""}
+        <tr><td>Certified % of contract</td><td>${fmtPct(r.certifiedPct,2)}</td></tr>
+        <tr><td>Net IPC payments${q.retentionRate!==null?` (retention ${fmtPct(q.retentionRate,0)})`:""}</td><td>${fmtNum(r.netIpc,2)}</td></tr>
+        <tr><td>Total cash received to date (= Net + Advance)</td><td>${fmtNum(r.cashToDate,2)}</td></tr>
+        <tr><td>Pending IPC</td><td>${q.pendingIpc?fmtNum(q.pendingIpc,2):"—"}</td></tr>
+        <tr><td>Remaining IPC (= Contract − (Certified + Pending))</td><td>${fmtNum(r.remainingIpc,2)}</td></tr>
+        <tr><td>Remaining %</td><td>${fmtPct(r.remainingPct,2)}</td></tr>
+        <tr><td>Share of monthly certification</td><td>${fmtPct(A.ipcThisMonth?r.thisMonthIpc/A.ipcThisMonth:null,1)}</td></tr>
+        <tr><td>Contribution to total current IPC</td><td>${fmtPct(A.ipcCurrent?r.certified/A.ipcCurrent:null,1)}</td></tr>
+      </table>
+      <h4>Key works done / outstanding</h4>
+      <div class="notes">${r.summary.length?`<ul>${r.summary.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`:`<span style="color:var(--muted)">No narrative recorded for this period.</span>`}</div>
+      ${r.id==="AI-01"?`<h4>Concrete placement</h4><div class="notes">Total poured to date: <b>${fmtNum(CONCRETE_TOTAL)} m³</b> · Peak month: <b>${fmtMonth(CONCRETE_PEAK.month)} · ${fmtNum(CONCRETE_PEAK.volume)} m³</b> · Latest month (${fmtMonth(CONCRETE[CONCRETE.length-1].month)}): <b>${fmtNum(CONCRETE[CONCRETE.length-1].volume)} m³</b></div>`:""}`;
+    $("#modal").classList.add("open"); icons();
+    $("#dClose").onclick = closeDrawer;
+  }
+  function closeDrawer(){ $("#modal").classList.remove("open"); }
+  $("#modal").addEventListener("click", e => { if(e.target.id==="modal") closeDrawer(); });
+  document.addEventListener("keydown", e => { if(e.key==="Escape") closeDrawer(); });
+
+  // ---------- orchestrate ----------
+  function update(){
+    const f = filtered();
+    const A = aggregate(f);
+    renderKpis(f, A); renderIpcKpis(A); renderCharts(f); renderTable(searched(f));
+    const active = ["prog","proj","status","from","to"].filter(k=>state[k]).length;
+    $("#fCount").textContent = `${f.length} of ${ALL.length} projects in scope${active?` · ${active} filter${active>1?"s":""} active`:""}`;
+    icons();
+  }
+  $("#fProg").onchange = e => { state.prog=e.target.value; update(); };
+  $("#fProj").onchange = e => { state.proj=e.target.value; update(); };
+  $("#fStatus").onchange = e => { state.status=e.target.value; update(); };
+  $("#fFrom").onchange = e => { state.from=e.target.value; update(); };
+  $("#fTo").onchange = e => { state.to=e.target.value; update(); };
+  $("#q").oninput = e => { state.q=e.target.value; renderTable(searched(filtered())); };
+  $("#btnReset").onclick = () => { Object.assign(state,{prog:"",proj:"",status:"",from:"",to:"",q:""}); ["fProg","fProj","fStatus","fFrom","fTo","q"].forEach(id=>$("#"+id).value=""); update(); };
+  document.querySelectorAll(".tab").forEach(t => t.onclick = () => { document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on")); t.classList.add("on"); state.view=t.dataset.view; state.sort={key:"id",dir:1}; renderTable(searched(filtered())); });
+  $("#tbl").addEventListener("click", e => {
+    const th = e.target.closest("th"); if(th){ const k=th.dataset.k; state.sort = state.sort.key===k ? {key:k,dir:-state.sort.dir} : {key:k,dir:1}; renderTable(searched(filtered())); return; }
+    const tr = e.target.closest("tr[data-id]"); if(tr) openDrawer(tr.dataset.id);
+  });
+
+  update();
+})();
+</script>
+</body>
+</html>
