@@ -34,6 +34,34 @@ header{position:sticky;top:0;z-index:40;background:rgba(15,23,42,.92);backdrop-f
 .sync{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);color:#6ee7b7;font-size:12px;font-weight:600;align-self:center}
 .sync .dot{width:8px;height:8px;border-radius:50%;background:var(--emerald);box-shadow:0 0 0 0 rgba(16,185,129,.7);animation:pulse 2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+
+/* ---- Light ("white") theme ---- */
+:root[data-theme=light]{
+  --bg:#f1f5f9; --s900:#f8fafc; --s800:#ffffff; --s700:#e2e8f0; --s600:#cbd5e1; --s500:#64748b; --s400:#64748b; --s300:#475569; --s200:#1e293b; --s100:#0f172a;
+  --border:rgba(15,23,42,.12); --text:#0f172a; --muted:#64748b;
+}
+:root[data-theme=light] header{background:rgba(241,245,249,.92)}
+:root[data-theme=light] .brand .logo{box-shadow:0 0 0 1px rgba(15,23,42,.08) inset}
+:root[data-theme=light] .kpi,:root[data-theme=light] .card,:root[data-theme=light] .tbl-wrap,:root[data-theme=light] .filters{box-shadow:0 1px 2px rgba(15,23,42,.05)}
+:root[data-theme=light] .kpi:hover{border-color:rgba(15,23,42,.3)}
+:root[data-theme=light] .sync{background:rgba(16,185,129,.1);border-color:rgba(5,150,105,.35);color:#047857}
+:root[data-theme=light] .badge.good{background:rgba(16,185,129,.12);color:#047857}
+:root[data-theme=light] .badge.warn{background:rgba(245,158,11,.14);color:#b45309}
+:root[data-theme=light] .badge.bad{background:rgba(239,68,68,.12);color:#b91c1c}
+:root[data-theme=light] .badge.neu{background:rgba(15,23,42,.07);color:#334155}
+:root[data-theme=light] .badge.info{background:rgba(59,130,246,.12);color:#1d4ed8}
+:root[data-theme=light] thead th,:root[data-theme=light] tbody tr.total td{background:#f1f5f9}
+:root[data-theme=light] tbody tr:hover{background:rgba(59,130,246,.06)}
+:root[data-theme=light] .pos{color:#047857}:root[data-theme=light] .neg{color:#b91c1c}
+:root[data-theme=light] .st.COMPLETED,:root[data-theme=light] .st.ONTRACK{color:#047857;border-color:rgba(5,150,105,.35)}
+:root[data-theme=light] .st.BEHIND{color:#b45309;border-color:rgba(217,119,6,.4)}
+:root[data-theme=light] .st.CRITICAL{color:#b91c1c;border-color:rgba(220,38,38,.35)}
+:root[data-theme=light] .st.REVIEW{color:#1d4ed8;border-color:rgba(29,78,216,.35)}
+:root[data-theme=light] .modal{background:rgba(15,23,42,.35)}
+:root[data-theme=light] .btn.primary{color:#fff}
+:root[data-theme=light] .bar.split i.p{background:rgba(59,130,246,.3)}
+#btnTheme{align-self:center;padding:8px 12px}
+#btnTheme svg{width:15px;height:15px}
 /* Filter strip */
 .filters{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;padding:16px;margin:18px 0;background:var(--s800);border:1px solid var(--border);border-radius:var(--radius)}
 .f{display:flex;flex-direction:column;gap:6px;min-width:160px;flex:1}
@@ -165,6 +193,7 @@ td.r,th.r{text-align:right}
       <div class="chip"><span class="k">Baseline Reference</span><span class="v" id="hBase">—</span></div>
       <div class="chip"><span class="k">Source Workbook</span><span class="v" id="hSrc">—</span></div>
       <div class="sync"><span class="dot"></span>Last synced <span id="hSync">—</span></div>
+      <button class="btn" id="btnTheme" title="Switch colour theme"><i data-lucide="sun"></i><span>Light</span></button>
     </div>
   </div>
 </header>
@@ -508,9 +537,14 @@ if (typeof module !== "undefined") module.exports = { PROJECT_DATA, ALL, aggrega
 
   // ---------- charts ----------
   Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
-  Chart.defaults.color = "#94a3b8";
-  Chart.defaults.borderColor = "rgba(148,163,184,.12)";
-  const TT = { backgroundColor:"#0b1220", borderColor:"rgba(148,163,184,.25)", borderWidth:1, titleColor:"#f8fafc", bodyColor:"#e2e8f0", padding:12, cornerRadius:8, titleFont:{weight:"700"}, displayColors:true, boxPadding:4 };
+  const THEMES = {
+    dark: { tick:"#94a3b8", grid:"rgba(148,163,184,.12)", zeroLine:"rgba(148,163,184,.5)", ink:"#f8fafc", label:"#cbd5e1", surface:"#1e293b", tipBg:"#0b1220", tipBorder:"rgba(148,163,184,.25)", tipTitle:"#f8fafc", tipBody:"#e2e8f0", dateLabel:"#fcd34d" },
+    light:{ tick:"#64748b", grid:"rgba(15,23,42,.08)", zeroLine:"rgba(15,23,42,.45)", ink:"#0f172a", label:"#334155", surface:"#ffffff", tipBg:"#ffffff", tipBorder:"rgba(15,23,42,.15)", tipTitle:"#0f172a", tipBody:"#334155", dateLabel:"#b45309" }
+  };
+  const TH = () => THEMES[document.documentElement.dataset.theme==="light"?"light":"dark"];
+  const TT = { padding:12, cornerRadius:8, titleFont:{weight:"700"}, displayColors:true, boxPadding:4, borderWidth:1 };
+  function applyChartTheme(){ const t=TH(); Chart.defaults.color=t.tick; Chart.defaults.borderColor=t.grid; Object.assign(TT,{backgroundColor:t.tipBg, borderColor:t.tipBorder, titleColor:t.tipTitle, bodyColor:t.tipBody}); }
+  applyChartTheme();
   const charts = {};
   function mkChart(cv, cfg){
     const id = cv.id || (cv.__id ||= "k"+Math.random());
@@ -540,15 +574,15 @@ if (typeof module !== "undefined") module.exports = { PROJECT_DATA, ALL, aggrega
     const bands = PROJECT_DATA.meta.progressBands;
     const bvals = bands.map(b=>A.bands[b.key]||0);
     setEmpty($("#cStatus"), !sr.length);
-    mkChart($("#cStatus"), { type:"doughnut", data:{ labels:bands.map(b=>b.label), datasets:[{ data:bvals, backgroundColor:["#059669","#3b82f6","#d97706","#64748b"], borderColor:"#1e293b", borderWidth:2, hoverOffset:6 }]},
+    mkChart($("#cStatus"), { type:"doughnut", data:{ labels:bands.map(b=>b.label), datasets:[{ data:bvals, backgroundColor:["#059669","#3b82f6","#d97706","#64748b"], borderColor:TH().surface, borderWidth:2, hoverOffset:6 }]},
       options:{ responsive:true, maintainAspectRatio:false, cutout:"62%", plugins:{ legend:{position:"right",labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:"rectRounded",padding:12,font:{size:11},generateLabels:ch=>ch.data.labels.map((l,i)=>({text:`${l} — ${bvals[i]}`,fillStyle:ch.data.datasets[0].backgroundColor[i],strokeStyle:"transparent",index:i,hidden:false}))}}, tooltip:{...TT, callbacks:{label:c=>` ${c.raw} project${c.raw===1?"":"s"} (${sr.length?((c.raw/sr.length)*100).toFixed(1):0}%)`}} } },
-      plugins:[{ id:"center", afterDraw(ch){ const {ctx,chartArea:{left,right,top,bottom}}=ch; const x=(left+right)/2,y=(top+bottom)/2; ctx.save(); ctx.textAlign="center"; ctx.fillStyle="#f8fafc"; ctx.font="800 26px Inter"; ctx.fillText(sr.length,x,y+4); ctx.fillStyle="#94a3b8"; ctx.font="600 10px Inter"; ctx.fillText("PROJECTS",x,y+20); ctx.restore(); } }] });
+      plugins:[{ id:"center", afterDraw(ch){ const {ctx,chartArea:{left,right,top,bottom}}=ch; const x=(left+right)/2,y=(top+bottom)/2; ctx.save(); ctx.textAlign="center"; ctx.fillStyle=TH().ink; ctx.font="800 26px Inter"; ctx.fillText(sr.length,x,y+4); ctx.fillStyle=TH().tick; ctx.font="600 10px Inter"; ctx.fillText("PROJECTS",x,y+20); ctx.restore(); } }] });
 
     // 3. Variance sorted
     const vs = [...sr].sort((a,b)=> b.variance-a.variance || a.id.localeCompare(b.id));
     setEmpty($("#cVar"), !sr.length);
     mkChart($("#cVar"), { type:"bar", data:{ labels:vs.map(r=>r.name), datasets:[{ label:"Variance", data:vs.map(r=>r.variance), backgroundColor:vs.map(r=> r.variance>=0?"#059669":r.variance>-0.1?"#d97706":"#ef4444"), borderRadius:4, maxBarThickness:22 }]},
-      options: base({ indexAxis:"y", interaction:{mode:"nearest",axis:"y",intersect:false}, scales:{ x:{ticks:{callback:v=>(v*100).toFixed(2)+"%"},grid:{color:ctx=>ctx.tick.value===0?"rgba(148,163,184,.5)":"rgba(148,163,184,.12)"}}, y:{grid:{display:false},ticks:{font:{size:11}}} },
+      options: base({ indexAxis:"y", interaction:{mode:"nearest",axis:"y",intersect:false}, scales:{ x:{ticks:{callback:v=>(v*100).toFixed(2)+"%"},grid:{color:ctx=>ctx.tick.value===0?TH().zeroLine:TH().grid}}, y:{grid:{display:false},ticks:{font:{size:11}}} },
         plugins:{ legend:{display:false}, tooltip:{...TT, callbacks:{ title:i=>vs[i[0].dataIndex].name, label:c=>{const r=vs[c.dataIndex]; return [` Variance: ${fmtSPct(r.variance,2)}`,` Planned ${fmtPct(r.planned,2)} · Actual ${fmtPct(r.actual,2)}`,` Status: ${r.status}`];} } } } }) });
 
     // 4. Gantt (floating bars on day axis)
@@ -557,14 +591,14 @@ if (typeof module !== "undefined") module.exports = { PROJECT_DATA, ALL, aggrega
     setEmpty($("#cGantt"), !sr.length);
     const ddx = d(dd);
     mkChart($("#cGantt"), { type:"bar", data:{ labels:gs.map(r=>r.name), datasets:[{ label:"Start → Forecast Finish", data:gs.map(r=>[d(r.start),d(r.forecastFinish)]), backgroundColor:gs.map(r=> r.delayDays>0?"rgba(239,68,68,.75)":"rgba(59,130,246,.8)"), borderRadius:4, maxBarThickness:18, borderSkipped:false }]},
-      options: base({ indexAxis:"y", interaction:{mode:"nearest",axis:"y",intersect:false}, scales:{ x:{min:d("2024-01-01"),max:d("2028-07-01"),ticks:{stepSize:182,callback:v=>{const t=new Date(toUTC(ep)+v*DAY);return MON[t.getUTCMonth()]+"-"+String(t.getUTCFullYear()).slice(2);}},grid:{color:"rgba(148,163,184,.1)"}}, y:{grid:{display:false},ticks:{font:{size:11}}} },
+      options: base({ indexAxis:"y", interaction:{mode:"nearest",axis:"y",intersect:false}, scales:{ x:{min:d("2024-01-01"),max:d("2028-07-01"),ticks:{stepSize:182,callback:v=>{const t=new Date(toUTC(ep)+v*DAY);return MON[t.getUTCMonth()]+"-"+String(t.getUTCFullYear()).slice(2);}},grid:{color:TH().grid}}, y:{grid:{display:false},ticks:{font:{size:11}}} },
         plugins:{ legend:{display:false}, tooltip:{...TT, callbacks:{ title:i=>gs[i[0].dataIndex].name, label:c=>{const r=gs[c.dataIndex]; return [` Start: ${fmtDate(r.start)}`,` Plan/Revised finish: ${fmtDate(r.planFinish)}`,` Forecast/Actual finish: ${fmtDate(r.forecastFinish)}`,` Delay: ${r.delayDays} days · Duration ${r.durationDays} days`];} } } } }),
       plugins:[{ id:"marks", afterDatasetsDraw(ch){ const {ctx,scales:{x,y}}=ch; ctx.save();
           // data-date line
           const px=x.getPixelForValue(ddx); ctx.strokeStyle="#f59e0b"; ctx.setLineDash([4,4]); ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(px,y.top); ctx.lineTo(px,y.bottom); ctx.stroke(); ctx.setLineDash([]);
-          ctx.fillStyle="#fcd34d"; ctx.font="600 10px Inter"; ctx.textAlign="center"; ctx.fillText("Data date",px,y.top-4);
+          ctx.fillStyle=TH().dateLabel; ctx.font="600 10px Inter"; ctx.textAlign="center"; ctx.fillText("Data date",px,y.top-4);
           // plan-finish markers
-          gs.forEach((r,i)=>{ const mx=x.getPixelForValue(d(r.planFinish)), my=y.getPixelForValue(i); ctx.fillStyle="#f8fafc"; ctx.beginPath(); ctx.moveTo(mx,my-7); ctx.lineTo(mx+5,my); ctx.lineTo(mx,my+7); ctx.lineTo(mx-5,my); ctx.closePath(); ctx.fill(); });
+          gs.forEach((r,i)=>{ const mx=x.getPixelForValue(d(r.planFinish)), my=y.getPixelForValue(i); ctx.fillStyle=TH().ink; ctx.beginPath(); ctx.moveTo(mx,my-7); ctx.lineTo(mx+5,my); ctx.lineTo(mx,my+7); ctx.lineTo(mx-5,my); ctx.closePath(); ctx.fill(); });
           ctx.restore(); } }] });
 
     // 5. S-curve (cumulative concrete) + monthly volume
@@ -587,9 +621,9 @@ if (typeof module !== "undefined") module.exports = { PROJECT_DATA, ALL, aggrega
     const ss = [...rows].sort((a,b)=>b.certified-a.certified);
     const pal = ["#3b82f6","#d97706","#059669","#ef4444","#8b5cf6","#0ea5e9","#f472b6","#84cc16","#64748b"];
     setEmpty($("#cIpcShare"), !rows.length);
-    mkChart($("#cIpcShare"), { type:"doughnut", data:{ labels:ss.map(r=>r.name), datasets:[{ data:ss.map(r=>r.certified), backgroundColor:ss.map((r,i)=>pal[i%pal.length]), borderColor:"#1e293b", borderWidth:2, hoverOffset:6 }]},
+    mkChart($("#cIpcShare"), { type:"doughnut", data:{ labels:ss.map(r=>r.name), datasets:[{ data:ss.map(r=>r.certified), backgroundColor:ss.map((r,i)=>pal[i%pal.length]), borderColor:TH().surface, borderWidth:2, hoverOffset:6 }]},
       options:{ responsive:true, maintainAspectRatio:false, cutout:"60%", plugins:{ legend:{position:"right",labels:{boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:"rectRounded",padding:8,font:{size:10},generateLabels:ch=>ss.map((r,i)=>({text:`${r.name} — ${fmtPct(A.ipcCurrent?r.certified/A.ipcCurrent:0)}`,fillStyle:pal[i%pal.length],strokeStyle:"transparent",index:i,hidden:false}))}}, tooltip:{...TT, callbacks:{label:c=>` SAR ${fmtNum(c.raw)} (${fmtPct(A.ipcCurrent?c.raw/A.ipcCurrent:0)})`}} } },
-      plugins:[{ id:"center2", afterDraw(ch){ const {ctx,chartArea:{left,right,top,bottom}}=ch; const x=(left+right)/2,y=(top+bottom)/2; ctx.save(); ctx.textAlign="center"; ctx.fillStyle="#f8fafc"; ctx.font="800 18px Inter"; ctx.fillText(fmtM(A.ipcCurrent),x,y+3); ctx.fillStyle="#94a3b8"; ctx.font="600 9px Inter"; ctx.fillText("SAR CURRENT",x,y+17); ctx.restore(); } }] });
+      plugins:[{ id:"center2", afterDraw(ch){ const {ctx,chartArea:{left,right,top,bottom}}=ch; const x=(left+right)/2,y=(top+bottom)/2; ctx.save(); ctx.textAlign="center"; ctx.fillStyle=TH().ink; ctx.font="800 18px Inter"; ctx.fillText(fmtM(A.ipcCurrent),x,y+3); ctx.fillStyle=TH().tick; ctx.font="600 9px Inter"; ctx.fillText("SAR CURRENT",x,y+17); ctx.restore(); } }] });
 
     // 8. Bridge waterfall
     const steps = [{label:"Previous", range:[0,A.ipcPrevious], kind:"total"}];
@@ -600,7 +634,7 @@ if (typeof module !== "undefined") module.exports = { PROJECT_DATA, ALL, aggrega
     const lo = Math.max(0, A.ipcPrevious*0.97);
     mkChart($("#cBridge"), { type:"bar", data:{ labels:steps.map(s=>s.label), datasets:[{ data:steps.map(s=>s.range), backgroundColor:steps.map(s=> s.kind==="total"?"#3b82f6": s.v>=0?"#059669":"#ef4444"), borderRadius:3, borderSkipped:false, maxBarThickness:48 }]},
       options: base({ scales:{ x:{grid:{display:false},ticks:{font:{size:11}}}, y:{min:lo, ticks:{callback:v=>fmtM(v)}} }, plugins:{ legend:{display:false}, tooltip:{...TT, callbacks:{ label:c=>{const s=steps[c.dataIndex]; return s.kind==="total" ? ` SAR ${fmtNum(s.range[1])}` : [` This month: SAR ${fmtNum(s.v)}`,` Running total: SAR ${fmtNum(s.range[1])}`];} } } } }),
-      plugins:[{ id:"wfl", afterDatasetsDraw(ch){ const {ctx,scales:{x,y}}=ch; ctx.save(); ctx.fillStyle="#cbd5e1"; ctx.font="600 10px Inter"; ctx.textAlign="center"; steps.forEach((s,i)=>{ if(s.kind==="move" && s.v){ ctx.fillText((s.v>0?"+":"")+fmtM(s.v), x.getPixelForValue(i), y.getPixelForValue(Math.max(...s.range))-6);} }); ctx.restore(); } }] });
+      plugins:[{ id:"wfl", afterDatasetsDraw(ch){ const {ctx,scales:{x,y}}=ch; ctx.save(); ctx.fillStyle=TH().label; ctx.font="600 10px Inter"; ctx.textAlign="center"; steps.forEach((s,i)=>{ if(s.kind==="move" && s.v){ ctx.fillText((s.v>0?"+":"")+fmtM(s.v), x.getPixelForValue(i), y.getPixelForValue(Math.max(...s.range))-6);} }); ctx.restore(); } }] });
   }
 
   // ---------- table ----------
@@ -612,7 +646,6 @@ if (typeof module !== "undefined") module.exports = { PROJECT_DATA, ALL, aggrega
       {k:"start",l:"Start",f:r=>fmtDate(r.start),sv:r=>r.start||""},
       {k:"planFinish",l:"Plan Finish",f:r=>fmtDate(r.planFinish),sv:r=>r.planFinish||""},
       {k:"forecastFinish",l:"Forecast / Actual Finish",f:r=>fmtDate(r.forecastFinish),sv:r=>r.forecastFinish||""},
-      {k:"delayDays",l:"Delay (d)",r:1,f:r=>r.delayDays===null?"<span class='zero'>n/a</span>":`<span class="${r.delayDays>0?"neg":r.delayDays<0?"pos":"zero"}">${r.delayDays>0?"+":""}${r.delayDays}</span>`,sv:r=>r.delayDays??-1e9},
       {k:"planned",l:"Planned %",r:1,f:r=>fmtPct(r.planned,2),sv:r=>r.planned??-1},
       {k:"actual",l:"Actual %",f:r=>`<div class="pg"><div class="bar"><i style="width:${(r.actual*100).toFixed(2)}%;background:${stColor(r.status)}"></i></div><b>${fmtPct(r.actual,2)}</b></div>`,sv:r=>r.actual},
       {k:"variance",l:"Variance",r:1,f:r=>r.variance===null?"<span class='zero'>—</span>":`<span class="${r.variance>0?"pos":r.variance<0?"neg":"zero"}">${fmtSPct(r.variance,2)}</span>`,sv:r=>r.variance??-1e9},
@@ -732,6 +765,17 @@ if (typeof module !== "undefined") module.exports = { PROJECT_DATA, ALL, aggrega
     const th = e.target.closest("th"); if(th){ const k=th.dataset.k; state.sort = state.sort.key===k ? {key:k,dir:-state.sort.dir} : {key:k,dir:1}; renderTable(searched(filtered())); return; }
     const tr = e.target.closest("tr[data-id]"); if(tr) openDrawer(tr.dataset.id);
   });
+
+  // ---------- theme (dark slate default / light "white" option) ----------
+  function setTheme(t, persist){
+    document.documentElement.dataset.theme = t;
+    const b=$("#btnTheme"); b.innerHTML = t==="light" ? '<i data-lucide="moon"></i><span>Dark</span>' : '<i data-lucide="sun"></i><span>Light</span>';
+    if(persist){ try{ localStorage.setItem("mk-theme", t); }catch(e){} }
+    applyChartTheme();
+  }
+  let savedTheme="dark"; try{ savedTheme = localStorage.getItem("mk-theme") || "dark"; }catch(e){}
+  setTheme(savedTheme, false);
+  $("#btnTheme").onclick = () => { setTheme(document.documentElement.dataset.theme==="light"?"dark":"light", true); update(); };
 
   update();
 })();
